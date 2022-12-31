@@ -41,6 +41,9 @@ class CreateProductRequest extends FormRequest
             'view_count' => "required",
             'code' => "required",
             'sell_count' => "required",
+            'picture' => 'required|image|mimes:jpg,svj,png,jpeg|max:1024',
+            'more_pictures' => 'required|array',
+            'more_pictures.*' => 'image|mimes:jpg,svj,png,jpeg|max:1024'
         ];
     }
 
@@ -59,6 +62,8 @@ class CreateProductRequest extends FormRequest
             'view_count' => "تعداد بازدید",
             'code' => "کد",
             'sell_count' => "تعداد فروش",
+            'picture' => "عکس اصلی",
+            'more_pictures' => "عکس های محصول",
         ];
         return $this->getLang($fa,['brand_id' => 'brand id']);
     }

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('slug');
             $table->text('description');
             $table->integer('status');
+            $table->string('pic');
             $table->timestamps();
         });
     }

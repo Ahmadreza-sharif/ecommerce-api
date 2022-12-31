@@ -12,7 +12,7 @@ class Product extends Model
     const ACTIVE = 1;
     const IN_ACTIVE = 0;
     protected $fillable = ['slug','name','description','status','key_words','price','status_store','view_count','code',
-        'sell_count','category_id','brand_id'];
+        'sell_count','category_id','brand_id','picture','more_pictures'];
 
     public function getStatus(){
         return [

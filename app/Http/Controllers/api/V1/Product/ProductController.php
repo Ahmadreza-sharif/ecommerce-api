@@ -11,6 +11,7 @@ use App\Http\Requests\Api\V1\Admin\product\UpdateProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 class productController extends Controller
 {
@@ -18,9 +19,32 @@ class productController extends Controller
     # CREATE
     public function store(CreateProductRequest $request)
     {
+        $date = date('Y-m');
+        $fileName = Storage::put("$date/products/", $request->file('picture'));
+        $filesName = [];
+        foreach ($request->file('more_pictures') as $item){
+            $filesName[] = Storage::put("$date/products", $item);
+        }
+
+        $jsonFileNames = json_encode($filesName);
 
         # CREATE
-        $product = Product::create($request->all());
+        $product = Product::create([
+            'name' => $request->input('name'),
+            'slug' => $request->input('slug'),
+            'description' => $request->input('description'),
+            'brand_id' => $request->input('brand_id'),
+            'category_id' => $request->input('category_id'),
+            'status' => $request->input('status'),
+            'price' => $request->input('price'),
+            'status_store' => $request->input('status_store'),
+            'key_words' => $request->input('key_words'),
+            'view_count' => $request->input('view_count'),
+            'code' => $request->input('code'),
+            'sell_count' => $request->input('sell_count'),
+            'picture' => $fileName,
+            'more_pictures' => $jsonFileNames,
+        ]);
 
         # PRODUCT RESOURCE
         $productResource = new ProductResource($product);
@@ -32,9 +56,26 @@ class productController extends Controller
     # UPDATE
     public function update(UpdateProductRequest $request)
     {
+        $date = date('Y-m');
         # FIND RECORD
         $product = product::find($request->input('product_id'));
 
+        $fileName = $product->picture;
+        if (!empty($request->file('picture'))) {
+            Storage::delete($fileName);
+            $fileName = Storage::put("$date/products/",$request->file('picture'));
+        }
+        $filesName = json_decode($product->more_pictures);
+        if (!empty($request->file('more_pictures'))){
+            $filesName = [];
+            $files = json_decode($product->more_pictures);
+            foreach ($files as $file){
+                Storage::delete($files);
+            }
+            foreach ($request->file('more_pictures') as $item){
+                $filesName[] = Storage::put("$date/products",$item);
+            }
+        }
         # BIND PARAMETERS
         $product->update([
             'name' => $request->input('name'),
@@ -48,7 +89,9 @@ class productController extends Controller
             'key_words' => $request->input('key_words'),
             'view_count' => $request->input('view_count'),
             'code' => $request->input('code'),
-            'sell_count' => $request->input('sell_count')
+            'sell_count' => $request->input('sell_count'),
+            "picture" => $fileName,
+            "more_pictures" => json_encode($filesName)
         ]);
 
         # PRODUCT RESOURCE
@@ -62,7 +105,14 @@ class productController extends Controller
     public function destroy(ProductRequest $request)
     {
         # FIND AND DELETE
-        product::where('id', $request->input('product_id'))->delete();
+        $product = product::find($request->input('product_id'));
+
+        Storage::delete($product->picture);
+
+        $pictures = json_decode($product->more_pictures);
+        foreach ($pictures as $picture){
+            Storage::delete($picture);
+        }
 
         # SEND RESPONSE
         return $this->sendSuccess('', __('general.product.delete'));
@@ -109,5 +159,10 @@ class productController extends Controller
 
         # SEND RESPONSE
         return $this->sendSuccess($productResource, __('general.product.status'));
+    }
+
+    public function storeImage()
+    {
+
     }
 }

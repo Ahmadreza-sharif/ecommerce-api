@@ -33,6 +33,7 @@ class UpdateCategoryRequest extends FormRequest
             'slug' => "required",
             'desc' => "required",
             'level' => "required",
+            'pic' => 'image|mimes:jpg,svj,png,jpeg|max:1024',
             ];
     }
 

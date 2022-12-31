@@ -10,6 +10,7 @@ use App\Http\Requests\Api\V1\Admin\brand\UpdateBrandRequest;
 use App\Http\Resources\Brand\BrandCollection;
 use App\Http\Resources\Brand\BrandResource;
 use App\Models\Brand as Brand;
+use Illuminate\Support\Facades\Storage;
 
 class brandController extends Controller
 {
@@ -17,14 +18,16 @@ class brandController extends Controller
     #CREATE
     public function store(CreateBrandRequest $request)
     {
+        $date = date('Y-m');
+        $fileName = Storage::put("$date/brands", $request->file('logo'));
 
         # CREATE
         $brand = brand::create([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
-            'logo' => $request->input('pic'),
+            'logo' => $fileName,
             'status' => $request->input('st'),
-            'category_id' => $request->input('category_id')
+            'category_id' => $request->input('category_id'),
         ]);
 
         # BRAND RESOURCE
@@ -37,16 +40,27 @@ class brandController extends Controller
     #UPDATE
     public function update(UpdateBrandRequest $request)
     {
+        $date = date('Y-m');
 
         # BIND VALUE
         $brand = brand::find($request->brand_id);
+
+        $fileName = $brand->logo;
+
+        if (!empty($request->file('logo'))) {
+            Storage::delete($brand->logo);
+            $fileName = Storage::put("$date/brands/",$request->file('logo'));
+        }
+
         $brand->update([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
-            'logo' => $request->input('pic'),
+            'logo' => $fileName,
             'status' => $request->input('st'),
             'category_id' => $request->input('category_id')
         ]);
+
+
 
         # BRAND RESOURCE
         $brandResource = new BrandResource($brand);
@@ -58,7 +72,12 @@ class brandController extends Controller
     # DELETE
     public function destroy(BrandRequest $request)
     {
-        brand::where('id', $request->brand_Id)->delete();
+        $brand = brand::find($request->brand_id);
+
+        Storage::delete($brand->logo);
+
+        $brand->delete();
+
         return $this->sendSuccess('', __("general.brand.delete"));
     }
 

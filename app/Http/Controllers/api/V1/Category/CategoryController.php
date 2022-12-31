@@ -10,7 +10,9 @@ use App\Http\Requests\Api\V1\Admin\Category\StatusCategoryRequest;
 use App\Http\Requests\Api\V1\Admin\Category\UpdateCategoryRequest;
 use App\Http\Resources\Category\CategoryCollection;
 use App\Http\Resources\Category\CategoryResource;
-use App\Models\Category as Category;
+use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Strong;
 
 class CategoryController extends Controller
 {
@@ -18,12 +20,16 @@ class CategoryController extends Controller
     # CREATE
     public function store(CreateCategoryRequest $request)
     {
+        $date = date('Y-m');
+        $fileName = Storage::put("$date/categories", $request->file('picture'));
+
         # CREATE
-        $category = category::create([
+        $category = Category::create([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
             'description' => $request->input('desc'),
             'status' => $request->input('level'),
+            'pic' => $fileName,
         ]);
 
         # CATEGORY RESOURCE
@@ -36,17 +42,27 @@ class CategoryController extends Controller
     # UPDATE
     public function update(UpdateCategoryRequest $request)
     {
+        $date = date('Y-m');
         # BIND VALUE NEW OR OLD
-        $product = category::find($request->category_id);
-        $product->update([
+        $category = Category::find($request->category_id);
+
+        $fileName = $category->pic;
+
+        if (!empty($request->file('pic'))) {
+            Storage::delete($category->pic);
+            $fileName = Storage::put("$date/categories/",$request->file('pic'));
+        }
+
+        $category->update([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
             'description' => $request->input('desc'),
             'status' => $request->input('level'),
+            'pic' => $fileName
         ]);
 
         # CATEGORY RESOURCE
-        $categoryResource = new CategoryResource($product);
+        $categoryResource = new CategoryResource($category);
 
         # RESPONSE
         return $this->sendSuccess($categoryResource, __('general.category.update'));
@@ -56,7 +72,11 @@ class CategoryController extends Controller
     public function destroy(CategoryRequest $request)
     {
         # DELETE RECORD
-        $category = category::where('id', $request->cat_id)->delete();
+        $category = Category::find($request->category_id);
+
+        Storage::delete($category->pic);
+
+        $category->delete();
 
         # SEND RESPONSE WITH OBJ OF DELETED RECORD
         return $this->sendSuccess([], __('general.category.delete'));
@@ -66,7 +86,7 @@ class CategoryController extends Controller
     public function show(CategoryRequest $request)
     {
         # FIND
-        $category = category::find($request->input('category_id'));
+        $category = Category::find($request->input('category_id'));
 
         # CATEGORY RESOURCE
         $categoryResource = new CategoryResource($category);
@@ -79,7 +99,7 @@ class CategoryController extends Controller
     function showAll()
     {
         # SELECT ALL
-        $category = category::all();
+        $category = Category::all();
 
         # CATEGORY COLLECTION
         $categoryCollection = new CategoryCollection($category);
@@ -91,7 +111,7 @@ class CategoryController extends Controller
     public function status(StatusCategoryRequest $request)
     {
         # FIND
-        $category = category::find($request->input('id'));
+        $category = Category::find($request->input('id'));
 
         # CHANGE STATUS
         $category->status = $category->status == category::ACTIVE ? category::IN_ACTIVE : category::ACTIVE;

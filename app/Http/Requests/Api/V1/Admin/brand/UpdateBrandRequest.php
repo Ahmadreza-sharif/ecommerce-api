@@ -31,7 +31,6 @@ class UpdateBrandRequest extends FormRequest
             'brand_id' => 'required|exists:brands,id',
             'title' => "required",
             'slug' => "required",
-            'pic' => "required",
             'st' => "required",
             'category_id' => "required|exists:categories,id"
         ];
@@ -43,7 +42,7 @@ class UpdateBrandRequest extends FormRequest
             'brand_id' => 'شناسه برند',
             'title' => "تایتل",
             'slug' => "نامک",
-            'pic' => "تصویر",
+            'logo' => "تصویر",
             'st' => "وضعیت",
             'category_id' => "ایدی دسته بندی"
         ];

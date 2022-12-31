@@ -29,7 +29,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         # SEND RESPONSE
-        return $this->sendSuccess('', __('general.auth.customer.login.success'));
+        return $this->sendSuccess(['token' => $token], __('general.auth.customer.login.success'));
     }
 
     public function verifyEmail()
