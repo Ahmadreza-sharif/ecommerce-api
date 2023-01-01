@@ -8,6 +8,7 @@ use App\Http\Resources\Comment\CommentCollection;
 use App\Http\Resources\Comment\CommentResource;
 use App\Http\Resources\Comment\ProductCommentCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends JsonResource
 {
@@ -34,7 +35,9 @@ class ProductResource extends JsonResource
             "category" => new CategoryResource($this->category),
             "brand" => new BrandResource($this->brand),
             "Liked" => $this->favorites()->count(),
-            "comments" => new ProductCommentCollection($this->comments)
+            "comments" => new ProductCommentCollection($this->comments),
+            "picture" => $this->picture,
+            "more_pictures" => $this->more_pictures
         ];
     }
 }

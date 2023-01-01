@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class category extends Model
+class Category extends Model
 {
     use HasFactory;
-    protected $fillable = ['name','slug','description','status'];
+    protected $fillable = ['name','slug','description','status','pic'];
 
     const ACTIVE = 1;
     const IN_ACTIVE = 0;

@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Requests\Api\V1\Admin\brand;
+namespace App\Http\Requests\Api\V1\Slider;
 
-use App\Http\Controllers\api\traits\ApiResponder;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use function Symfony\Component\Translation\t;
 
-class UpdateBrandRequest extends FormRequest
+class StoreSliderRequest extends FormRequest
 {
-    use ApiResponder;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -28,26 +27,22 @@ class UpdateBrandRequest extends FormRequest
     public function rules()
     {
         return [
-            'brand_id' => 'required|exists:brands,id',
-            'title' => "required",
-            'slug' => "required",
-            'st' => "required",
-            'category_id' => "required|exists:categories,id"
+            'picture' => 'required|image|mimes:jpg,svj,png,jpeg',
+            'text' => 'required',
+            'url' => 'required',
+            'status' => "boolean"
         ];
     }
 
     public function attributes()
     {
         $fa = [
-            'brand_id' => 'شناسه برند',
-            'title' => "تایتل",
-            'slug' => "نامک",
-            'logo' => "تصویر",
-            'st' => "وضعیت",
-            'category_id' => "ایدی دسته بندی"
+            'picture' => 'عکس',
+            'text' => 'متن',
+            'url' => 'لینک',
+            'status' => 'وضعیت',
         ];
-
-        return $this->getLang($fa,["pic" => "avatar", 'st' => 'status']);
+        return $this->getLang($fa,[]);
     }
 
     protected function failedValidation(Validator $validator)

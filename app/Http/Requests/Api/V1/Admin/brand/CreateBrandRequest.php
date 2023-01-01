@@ -30,7 +30,7 @@ class CreateBrandRequest extends FormRequest
         return [
             'title' => "required",
             'slug' => "required",
-            'pic' => "required",
+            'logo' => 'required|image|mimes:jpg,svj,png,jpeg|max:1024',
             'st' => "required",
             'category_id' => "required|exists:categories,id",
         ];
@@ -42,7 +42,7 @@ class CreateBrandRequest extends FormRequest
             'category_id' => "ایدی",
             'title' => "عنوان",
             'slug' => "اسلاگ",
-            'pic' => "تصویر",
+            'logo' => "تصویر",
             'st' => "وضعیت",
         ];
 

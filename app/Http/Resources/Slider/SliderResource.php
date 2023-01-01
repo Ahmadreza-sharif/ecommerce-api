@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Resources\Category;
+namespace App\Http\Resources\Slider;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CategoryResource extends JsonResource
+class SliderResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,12 +14,6 @@ class CategoryResource extends JsonResource
      */
     public function toArray($request)
     {
-        return[
-            'title' => $this->name,
-            'slug'  => $this->slug,
-            'desc'  => $this->description,
-            'status'  => $this->getStatus(),
-            'picture' => $this->pic
-        ];
+        return parent::toArray($request);
     }
 }

@@ -35,6 +35,7 @@ class CreateCategoryRequest extends FormRequest
             'slug' => "required",
             'desc' => "required",
             'level' => "required",
+            'picture' => 'required|image|mimes:jpg,svj,png,jpeg|max:1024',
         ];
     }
 
@@ -45,6 +46,7 @@ class CreateCategoryRequest extends FormRequest
             'slug' => "نامک",
             'desc' => "توضیحات",
             'level' => "وضعیت",
+            'picture' => "عکس",
         ];
 
         $en = [

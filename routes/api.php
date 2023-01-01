@@ -135,6 +135,14 @@ Route::prefix('v1/')->group(function () {
             Route::post('/role',[\App\Http\Controllers\api\V1\Role\RoleController::class,'show'])
                 ->middleware('can:show-role');
         });
+
+        Route::prefix('slider')->group(function (){
+            Route::post('/add',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'store']);
+            Route::post('/update',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'update']);
+            Route::post('/delete',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'destroy']);
+            Route::get('/allSlide',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'showAll']);
+            Route::get('/slider',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'show']);
+        });
     });
 
     Route::post('/payment', [\App\Http\Controllers\api\V1\Payment\PaymentController::class, 'payment']);
