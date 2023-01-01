@@ -10,5 +10,12 @@ use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
+    protected $time;
+
+    public function __construct()
+    {
+        $this->time = date('Y-m');
+    }
+
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests , ApiResponder;
 }

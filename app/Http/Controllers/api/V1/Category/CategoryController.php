@@ -50,7 +50,7 @@ class CategoryController extends Controller
 
         if (!empty($request->file('pic'))) {
             Storage::delete($category->pic);
-            $fileName = Storage::put("$date/categories/",$request->file('pic'));
+            $fileName = Storage::put("$date/categories",$request->file('pic'));
         }
 
         $category->update([

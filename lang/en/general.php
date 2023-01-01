@@ -55,6 +55,12 @@ return [
         'invalid-voucher' => 'voucher not found'
     ],
 
+    "slider" => [
+        'store' => 'slider created successfully.',
+        'destroy' => 'slider deleted successfully.',
+        'update' => 'slider updated successfully.',
+    ],
+
     "auth" => [
         "admin" => [
             "login" => [
