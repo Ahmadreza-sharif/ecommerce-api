@@ -10,7 +10,9 @@ use App\Http\Requests\Api\V1\Admin\product\StatusProductRequest;
 use App\Http\Requests\Api\V1\Admin\product\UpdateProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
+use App\Models\Comment;
 use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class productController extends Controller
@@ -161,8 +163,54 @@ class productController extends Controller
         return $this->sendSuccess($productResource, __('general.product.status'));
     }
 
-    public function storeImage()
+    public function amazingProduct()
     {
+        $product = Product::where('status','=',1)->orderBy('price','Asc')->take(15)->get();
+
+        return $this->sendSuccess($product,'Amazing products');
+    }
+
+    public function mostSales()
+    {
+        $product = Product::where('status','=',1)->orderBy('sell_count','Desc')->take(15)->get();
+
+        return $this->sendSuccess($product,'most Sales Product');
+    }
+
+    public function newProduct()
+    {
+        $product = Product::where('status','=',1)->orderBy('created_at','Asc')->take(15)->get();
+
+        return $this->sendSuccess($product,'most new products');
+    }
+
+    public function mostFavorite()
+    {
+        $product = Product::withCount('likes')->where('status','=',1)->orderBy('likes_count','Desc')->take(15)->get();
+
+        return $this->sendSuccess($product,'most new products');
+    }
+
+    public function likeProduct(ProductRequest $request)
+    {
+        $product = Product::find($request->input('product_id'));
+
+        if ($this->likeExists($product)->exists()) {
+            $res = $this->likeExists($product)->delete();
+            return $this->sendSuccess('', 'like deleted successfully.');
+        } else {
+            $product->likes()->create([
+                'user_id' => Auth::id()
+            ]);
+            return $this->sendSuccess('', 'Product liked successfully.');
+        }
 
     }
+
+    public function likeExists($product)
+    {
+        return $product->likes()->where('user_id', Auth::id());
+    }
+
+
 }

@@ -30,6 +30,7 @@ Route::prefix('v1/')->group(function () {
                 ->middleware('can:destroy-product');
             Route::post('/status', [\App\Http\Controllers\api\V1\Product\ProductController::class, 'status'])
                 ->middleware('can:status-product');
+            Route::post('/likeProduct',[\App\Http\Controllers\api\V1\Product\ProductController::class,'likeProduct']);
         });
 
         Route::prefix('category')->group(function () {
@@ -142,6 +143,15 @@ Route::prefix('v1/')->group(function () {
             Route::post('/delete',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'destroy']);
             Route::get('/allSlide',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'showAll']);
             Route::get('/slider',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'show']);
+        });
+
+        Route::prefix('home')->group(function (){
+            Route::get('/slider',[\App\Http\Controllers\api\V1\Slider\SliderController::class,'show']);
+            Route::get('/categories',[\App\Http\Controllers\api\V1\Category\CategoryController::class,'showAllHome']);
+            Route::get('/amazing',[\App\Http\Controllers\api\V1\Product\ProductController::class,'amazingProduct']);
+            Route::get('/mostSales',[\App\Http\Controllers\api\V1\Product\ProductController::class,'mostSales']);
+            Route::get('/newProducts',[\App\Http\Controllers\api\V1\Product\ProductController::class,'newProduct']);
+            Route::get('/mostFavorite',[\App\Http\Controllers\api\V1\Product\ProductController::class,'mostFavorite']);
         });
     });
 
