@@ -10,6 +10,7 @@ use App\Http\Requests\Api\V1\Admin\Category\StatusCategoryRequest;
 use App\Http\Requests\Api\V1\Admin\Category\UpdateCategoryRequest;
 use App\Http\Resources\Category\CategoryCollection;
 use App\Http\Resources\Category\CategoryResource;
+use App\Http\Resources\Category\HomeCategoryCollection;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Strong;
@@ -122,5 +123,18 @@ class CategoryController extends Controller
 
         # SEND RESPONSE
         return $this->sendSuccess($categoryResource, __('general.category.status'));
+    }
+
+    public
+    function showAllHome()
+    {
+        # SELECT ALL
+        $category = Category::where('status','=',1)->get();
+
+        # CATEGORY COLLECTION
+        $categoryCollection = new HomeCategoryCollection($category);
+
+        # SEND RESPONSE
+        return $this->sendSuccess($categoryCollection, __('general.category.select-all'));
     }
 }

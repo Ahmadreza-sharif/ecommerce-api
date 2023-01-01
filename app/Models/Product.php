@@ -45,4 +45,9 @@ class Product extends Model
     {
         return $this->morphMany(Comment::class,'commentable')->where('status','=',1);
     }
+
+    public function likes()
+    {
+        return $this->morphMany(Like::class,'likeable');
+    }
 }
