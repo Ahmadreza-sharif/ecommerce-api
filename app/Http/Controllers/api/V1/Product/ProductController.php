@@ -144,9 +144,7 @@ class productController extends Controller
 
         $product = product::find($request->input('product_id'));
 
-        $productResource = new ProductResource($product);
-
-        return $this->sendSuccess($productResource, __('general.product.select'));
+        return $this->sendSuccess(new ProductResource($product), __('general.product.select'));
     }
 
     # SELECT ALL
@@ -160,9 +158,7 @@ class productController extends Controller
 
         $product = product::all();
 
-        $productCollection = new ProductCollection($product);
-
-        return $this->sendSuccess($productCollection, __('general.product.select-all'));
+        return $this->sendSuccess(new ProductCollection($product), __('general.product.select-all'));
     }
 
     # CHANGE STATUS
@@ -183,9 +179,7 @@ class productController extends Controller
         $product->status = $product->status == product::ACTIVE ? product::IN_ACTIVE : product::ACTIVE;
         $product->save();
 
-        $productResource = new ProductResource($product);
-
-        return $this->sendSuccess($productResource, __('general.product.status'));
+        return $this->sendSuccess(new ProductResource($product), __('general.product.status'));
     }
 
     public function amazingProduct()

@@ -10,6 +10,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 class UpdateBrandRequest extends FormRequest
 {
     use ApiResponder;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -32,7 +33,8 @@ class UpdateBrandRequest extends FormRequest
             'title' => "required",
             'slug' => "required",
             'st' => "required",
-            'category_id' => "required|exists:categories,id"
+            'category_id' => "required|exists:categories,id",
+            "logo" => 'required|image|mimes:jpg,svj,png,jpeg|max:1024'
         ];
     }
 
@@ -47,7 +49,7 @@ class UpdateBrandRequest extends FormRequest
             'category_id' => "ایدی دسته بندی"
         ];
 
-        return $this->getLang($fa,["pic" => "avatar", 'st' => 'status']);
+        return $this->getLang($fa, ["pic" => "avatar", 'st' => 'status']);
     }
 
     protected function failedValidation(Validator $validator)

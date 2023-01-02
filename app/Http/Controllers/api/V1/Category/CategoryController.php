@@ -83,8 +83,6 @@ class CategoryController extends Controller
         # SELECT ALL
         $category = Category::all();
 
-        dd($category);
-
         # SEND RESPONSE
         return $this->sendSuccess(new CategoryCollection($category), __('general.category.select-all'));
     }
