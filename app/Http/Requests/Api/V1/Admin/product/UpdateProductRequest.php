@@ -41,6 +41,9 @@ class UpdateProductRequest extends FormRequest
             'view_count' => "required",
             'code' => "required",
             'sell_count' => "required",
+            'picture' => 'required|image|mimes:jpg,svj,png,jpeg|max:1024',
+            'more_pictures' => 'required|array',
+            'more_pictures.*' => 'required|image|mimes:jpg,svj,png,jpeg|max:1024'
         ];
     }
 
@@ -59,10 +62,13 @@ class UpdateProductRequest extends FormRequest
             'view_count' => "تعداد بازدید",
             'code' => "کد",
             'sell_count' => "تعداد فروش",
-            "product_id" => 'ایدی محصول'
+            "product_id" => 'ایدی محصول',
+            'more_pictures' => 'گالری',
+            'picture' => 'عکس'
+
         ];
 
-        return $this->getLang($fa,['product_id' => 'product id' , 'category_id' => 'category id']);
+        return $this->getLang($fa,['product_id' => 'product id' , 'category_id' => 'category id', 'more_pictures' => 'gallery']);
     }
 
     public function failedValidation(Validator $validator)

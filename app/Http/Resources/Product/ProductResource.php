@@ -37,7 +37,7 @@ class ProductResource extends JsonResource
             "Liked" => $this->favorites()->count(),
             "comments" => new ProductCommentCollection($this->comments),
             "picture" => $this->picture,
-            "more_pictures" => $this->more_pictures
+            "more_pictures" => $this->media->pluck('name')
         ];
     }
 }

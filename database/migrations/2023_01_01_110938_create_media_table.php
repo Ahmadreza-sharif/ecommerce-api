@@ -13,13 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sliders', function (Blueprint $table) {
-            $table->id();
-            $table->string('file_name');
-            $table->string('url');
-            $table->string('alt');
-            $table->tinyInteger('status')->default(0);
-            $table->timestamps();
+        Schema::create('media', function (Blueprint $table) {
+            $table->string('name');
+            $table->integer('mediable_id');
+            $table->string('mediable_type');
         });
     }
 
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sliders');
+        Schema::dropIfExists('media');
     }
 };

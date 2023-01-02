@@ -35,6 +35,4 @@ class Category extends Model
     {
         return $this->morphToMany(Voucher::class,'voucherables');
     }
-
-
 }

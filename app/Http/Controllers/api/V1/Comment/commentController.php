@@ -89,6 +89,4 @@ class commentController extends Controller
     {
         return $comment->likes()->where('user_id', Auth::id());
     }
-
-
 }
