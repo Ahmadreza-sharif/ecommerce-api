@@ -21,52 +21,37 @@ class CategoryController extends Controller
     # CREATE
     public function store(CreateCategoryRequest $request)
     {
-        $date = date('Y-m');
-        $fileName = Storage::put("$date/categories", $request->file('picture'));
-
         # CREATE
         $category = Category::create([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
             'description' => $request->input('desc'),
             'status' => $request->input('level'),
-            'pic' => $fileName,
+            'pic' => $this->putStorage('/categories', $request->file('picture')),
         ]);
 
-        # CATEGORY RESOURCE
-        $categoryResource = new CategoryResource($category);
-
         # SEND RESPONSE
-        return $this->sendSuccess($categoryResource, __('general.category.add'));
+        return $this->sendSuccess(new CategoryResource($category), __('general.category.add'));
     }
 
     # UPDATE
     public function update(UpdateCategoryRequest $request)
     {
-        $date = date('Y-m');
         # BIND VALUE NEW OR OLD
         $category = Category::find($request->category_id);
 
-        $fileName = $category->pic;
-
-        if (!empty($request->file('pic'))) {
-            Storage::delete($category->pic);
-            $fileName = Storage::put("$date/categories",$request->file('pic'));
-        }
+        $this->deleteStorage($category->pic);
 
         $category->update([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
             'description' => $request->input('desc'),
             'status' => $request->input('level'),
-            'pic' => $fileName
+            'pic' => $this->putStorage('/categories',$request->file('pic'))
         ]);
 
-        # CATEGORY RESOURCE
-        $categoryResource = new CategoryResource($category);
-
         # RESPONSE
-        return $this->sendSuccess($categoryResource, __('general.category.update'));
+        return $this->sendSuccess(new CategoryResource($category), __('general.category.update'));
     }
 
     # DELETE
@@ -75,7 +60,7 @@ class CategoryController extends Controller
         # DELETE RECORD
         $category = Category::find($request->category_id);
 
-        Storage::delete($category->pic);
+        $this->deleteStorage($category->pic);
 
         $category->delete();
 
@@ -89,24 +74,19 @@ class CategoryController extends Controller
         # FIND
         $category = Category::find($request->input('category_id'));
 
-        # CATEGORY RESOURCE
-        $categoryResource = new CategoryResource($category);
-
         # SEND RESPONSE
-        return $this->sendSuccess($categoryResource, __('general.category.select'));
+        return $this->sendSuccess(new CategoryResource($category), __('general.category.select'));
     }
 
-    public
-    function showAll()
+    public function showAll()
     {
         # SELECT ALL
         $category = Category::all();
 
-        # CATEGORY COLLECTION
-        $categoryCollection = new CategoryCollection($category);
+        dd($category);
 
         # SEND RESPONSE
-        return $this->sendSuccess($categoryCollection, __('general.category.select-all'));
+        return $this->sendSuccess(new CategoryCollection($category), __('general.category.select-all'));
     }
 
     public function status(StatusCategoryRequest $request)
@@ -118,23 +98,17 @@ class CategoryController extends Controller
         $category->status = $category->status == category::ACTIVE ? category::IN_ACTIVE : category::ACTIVE;
         $category->save();
 
-        # RESOURCE CATEGORY
-        $categoryResource = new CategoryResource($category);
-
         # SEND RESPONSE
-        return $this->sendSuccess($categoryResource, __('general.category.status'));
+        return $this->sendSuccess(new CategoryResource($category), __('general.category.status'));
     }
 
     public
     function showAllHome()
     {
         # SELECT ALL
-        $category = Category::where('status','=',1)->get();
-
-        # CATEGORY COLLECTION
-        $categoryCollection = new HomeCategoryCollection($category);
+        $category = Category::where('status', '=', 1)->get();
 
         # SEND RESPONSE
-        return $this->sendSuccess($categoryCollection, __('general.category.select-all'));
+        return $this->sendSuccess(new HomeCategoryCollection($category), __('general.category.select-all'));
     }
 }

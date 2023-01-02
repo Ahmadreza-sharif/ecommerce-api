@@ -10,7 +10,6 @@ use App\Http\Requests\Api\V1\Admin\product\StatusProductRequest;
 use App\Http\Requests\Api\V1\Admin\product\UpdateProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
-use App\Models\Comment;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -21,10 +20,15 @@ class productController extends Controller
     # CREATE
     public function store(CreateProductRequest $request)
     {
-        # INSERT MAIN PHOTO
-        $fileName = Storage::put("$this->time/products", $request->file('picture'));
+        /*
+         * get data from user
+         * validate data
+         * ============================================
+         * create product and insert main photo
+         * insert gallery
+         * response
+         */
 
-        # CREATE
         $product = Product::create([
             'name' => $request->input('name'),
             'slug' => $request->input('slug'),
@@ -38,64 +42,49 @@ class productController extends Controller
             'view_count' => $request->input('view_count'),
             'code' => $request->input('code'),
             'sell_count' => $request->input('sell_count'),
-            'picture' => $fileName,
+            'picture' => $this->putStorage("/products", $request->file('picture')),
         ]);
 
-        # INSERT MORE PHOTOS
         foreach ($request->file('more_pictures') as $item) {
-            $moreFile = Storage::put("$this->time/products", $item);
-            $product->media()->create(['name' => $moreFile]);
+            $product->media()->create(['name' => $this->putStorage("/products",$item)]);
         }
 
-        # PRODUCT RESOURCE
-        $productResource = new ProductResource($product);
-
-        # SEND RESPONSE
-        return $this->sendSuccess($productResource, __('general.product.add'));
+        return $this->sendSuccess(new ProductResource($product), __('general.product.add'));
     }
 
     # UPDATE
     public function update(UpdateProductRequest $request)
     {
         /*
-         * get data from user  = 1
-         * validate data = 1
+         * get data from user
+         * validate data
          * ============================================
-         * find product = 1
-         * get picture and gallery = 1
-         * delete existing picture = 1
-         * delete existing gallery = 1
-         * save uploaded data = 1
-         * update data and file names = 1
-         * send response = 1
+         * find product
+         * get picture and gallery
+         * delete existing picture
+         * delete existing gallery
+         * save uploaded data
+         * update data and file names
+         * send response
          */
 
-        // find products
         $product = product::find($request->input('product_id'));
 
-        // get pictures
         $picture = $product->picture;
         $gallery = $product->media();
 
-        // delete picture
-        Storage::delete($picture);
-        $newPicture = Storage::put($this->time . '/products', $request->file('picture'));
+        $this->deleteStorage($picture);
 
-
-        // delete gallery
         foreach ($gallery->get() as $galleryItem) {
-            Storage::delete($galleryItem->name);
+            $this->deleteStorage($galleryItem->name);
         }
 
         $gallery->delete();
 
-        // save uploaded data and insert into db
         foreach ($request->file('more_pictures') as $item) {
-            $pic = Storage::put("$this->time/products", $item);
-            $gallery->create(['name' => $pic]);
+            $gallery->create(['name' => $this->putStorage("/products", $item)]);
         }
 
-        // update selected record
         $product->update([
             'name' => $request->input('name'),
             'slug' => $request->input('slug'),
@@ -109,11 +98,10 @@ class productController extends Controller
             'view_count' => $request->input('view_count'),
             'code' => $request->input('code'),
             'sell_count' => $request->input('sell_count'),
-            "picture" => $newPicture,
+            "picture" => $this->putStorage('/products',$request->file('picture')),
         ]);
         $product->save();
 
-        // fucking response
         return $this->sendSuccess($product, 'Product Updated Successfully');
     }
 
@@ -121,70 +109,82 @@ class productController extends Controller
     public function destroy(ProductRequest $request)
     {
         /*
-         * get data from user  = 1
-         * validate data = 1
+         * get product id
+         * validate data
          * ============================================
-         * find product = 1
-         * get picture and gallery = 1
-         * delete existing picture = 1
-         * delete existing gallery = 1
-         * save uploaded data = 1
-         * update data and file names = 1
-         * send response = 1
+         * find product
+         * delete main picture
+         * delete gallery
+         * delete product
+         * response
         */
+
         $product = product::find($request->input('product_id'));
 
         Storage::delete($product->picture);
 
-        $pictures = json_decode($product->more_pictures);
-        foreach ($pictures as $picture) {
+        foreach ($product->more_pictures as $picture) {
             Storage::delete($picture);
         }
 
-        # SEND RESPONSE
         return $this->sendSuccess('', __('general.product.delete'));
     }
 
     # SELECT ONE
     public function show(ProductRequest $request)
     {
-        # FIND
+        /*
+         * get product id
+         * validate data
+         * ============================================
+         * find product
+         * send to resource
+         * response
+        */
+
         $product = product::find($request->input('product_id'));
 
-        # PRODUCT RESOURCE
         $productResource = new ProductResource($product);
 
-        # SEND RESPONSE
         return $this->sendSuccess($productResource, __('general.product.select'));
     }
 
     # SELECT ALL
     public function showAll()
     {
-        # GET ALL PRODUCTS
+        /*
+         * select all product
+         * send to collection
+         * response
+        */
+
         $product = product::all();
 
-        # PRODUCT COLLECTION
         $productCollection = new ProductCollection($product);
 
-        # SEND RESPONSE
         return $this->sendSuccess($productCollection, __('general.product.select-all'));
     }
 
     # CHANGE STATUS
     public function status(StatusProductRequest $request)
     {
-        # FIND
+        /*
+         * get product id
+         * validate data
+         * ============================================
+         * find product
+         * change status
+         * send to resource
+         * response
+        */
+
         $product = product::find($request->input('id'));
 
-        # CHANGE STATUS
         $product->status = $product->status == product::ACTIVE ? product::IN_ACTIVE : product::ACTIVE;
         $product->save();
 
-        # RESOURCE CATEGORY
         $productResource = new ProductResource($product);
 
-        # SEND RESPONSE
         return $this->sendSuccess($productResource, __('general.product.status'));
     }
 
