@@ -18,55 +18,36 @@ class brandController extends Controller
     #CREATE
     public function store(CreateBrandRequest $request)
     {
-        $date = date('Y-m');
-        $fileName = Storage::put("$date/brands", $request->file('logo'));
-
         # CREATE
         $brand = brand::create([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
-            'logo' => $fileName,
+            'logo' => $this->putStorage('/brands', $request->file('logo')),
             'status' => $request->input('st'),
             'category_id' => $request->input('category_id'),
         ]);
 
-        # BRAND RESOURCE
-        $brandResource = new brandResource($brand);
-
         # SEND RESPONSE
-        return $this->sendSuccess($brandResource, __('general.brand.add'));
+        return $this->sendSuccess(new brandResource($brand), __('general.brand.add'));
     }
 
     #UPDATE
     public function update(UpdateBrandRequest $request)
     {
-        $date = date('Y-m');
-
         # BIND VALUE
         $brand = brand::find($request->brand_id);
 
-        $fileName = $brand->logo;
-
-        if (!empty($request->file('logo'))) {
-            Storage::delete($brand->logo);
-            $fileName = Storage::put("$date/brands/",$request->file('logo'));
-        }
+        $this->deleteStorage($brand->logo);
 
         $brand->update([
             'name' => $request->input('title'),
             'slug' => $request->input('slug'),
-            'logo' => $fileName,
+            'logo' => $this->putStorage('/brands', $request->file('logo')),
             'status' => $request->input('st'),
             'category_id' => $request->input('category_id')
         ]);
 
-
-
-        # BRAND RESOURCE
-        $brandResource = new BrandResource($brand);
-
-        # RESPONSE
-        return $this->sendSuccess($brandResource, __("general.brand.update"));
+        return $this->sendSuccess(new BrandResource($brand), __("general.brand.update"));
     }
 
     # DELETE
@@ -74,7 +55,7 @@ class brandController extends Controller
     {
         $brand = brand::find($request->brand_id);
 
-        Storage::delete($brand->logo);
+        $this->deleteStorage($brand->logo);
 
         $brand->delete();
 
@@ -87,11 +68,8 @@ class brandController extends Controller
         # SELECT OBJ , VALIDATE
         $brand = brand::find($request->input('brand_id'));
 
-        # BRAND RESOURCE
-        $brandResource = new BrandResource($brand);
-
         # SEND RESPONSE
-        return $this->sendSuccess($brandResource, __("general.brand.select"));
+        return $this->sendSuccess(new BrandResource($brand), __("general.brand.select"));
     }
 
     # SELECT ALL
@@ -100,11 +78,9 @@ class brandController extends Controller
         # SELECT ALL
         $brand = brand::with(['category'])->get();
 
-        # BRAND RESOURCE
-        $brandResource = new BrandCollection($brand);
 
         # SEND RESPONSE
-        return $this->sendSuccess($brandResource, __('general.brand.selectAll'));
+        return $this->sendSuccess(new BrandCollection($brand), __('general.brand.selectAll'));
     }
 
     # CHANGE STATUS
@@ -117,10 +93,6 @@ class brandController extends Controller
         $brand->status = $brand->status == brand::ACTIVE ? brand::IN_ACTIVE : brand::ACTIVE;
         $brand->save();
 
-        # RESOURCE BRAND
-        $brandResource = new BrandResource($brand);
-
-        # SEND RESPONSE
-        return $this->sendSuccess($brandResource, __("general.brand.status"));
+        return $this->sendSuccess(new BrandResource($brand), __("general.brand.status"));
     }
 }

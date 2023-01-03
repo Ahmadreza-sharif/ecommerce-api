@@ -50,4 +50,9 @@ class Product extends Model
     {
         return $this->morphMany(Like::class,'likeable');
     }
+
+    public function media()
+    {
+        return $this->morphMany(media::class,'mediable');
+    }
 }

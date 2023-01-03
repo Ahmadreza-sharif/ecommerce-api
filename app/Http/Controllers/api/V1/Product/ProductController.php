@@ -10,7 +10,6 @@ use App\Http\Requests\Api\V1\Admin\product\StatusProductRequest;
 use App\Http\Requests\Api\V1\Admin\product\UpdateProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
-use App\Models\Comment;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -21,16 +20,15 @@ class productController extends Controller
     # CREATE
     public function store(CreateProductRequest $request)
     {
-        $date = date('Y-m');
-        $fileName = Storage::put("$date/products/", $request->file('picture'));
-        $filesName = [];
-        foreach ($request->file('more_pictures') as $item){
-            $filesName[] = Storage::put("$date/products", $item);
-        }
+        /*
+         * get data from user
+         * validate data
+         * ============================================
+         * create product and insert main photo
+         * insert gallery
+         * response
+         */
 
-        $jsonFileNames = json_encode($filesName);
-
-        # CREATE
         $product = Product::create([
             'name' => $request->input('name'),
             'slug' => $request->input('slug'),
@@ -44,41 +42,49 @@ class productController extends Controller
             'view_count' => $request->input('view_count'),
             'code' => $request->input('code'),
             'sell_count' => $request->input('sell_count'),
-            'picture' => $fileName,
-            'more_pictures' => $jsonFileNames,
+            'picture' => $this->putStorage("/products", $request->file('picture')),
         ]);
 
-        # PRODUCT RESOURCE
-        $productResource = new ProductResource($product);
+        foreach ($request->file('more_pictures') as $item) {
+            $product->media()->create(['name' => $this->putStorage("/products",$item)]);
+        }
 
-        # SEND RESPONSE
-        return $this->sendSuccess($productResource, __('general.product.add'));
+        return $this->sendSuccess(new ProductResource($product), __('general.product.add'));
     }
 
     # UPDATE
     public function update(UpdateProductRequest $request)
     {
-        $date = date('Y-m');
-        # FIND RECORD
+        /*
+         * get data from user
+         * validate data
+         * ============================================
+         * find product
+         * get picture and gallery
+         * delete existing picture
+         * delete existing gallery
+         * save uploaded data
+         * update data and file names
+         * send response
+         */
+
         $product = product::find($request->input('product_id'));
 
-        $fileName = $product->picture;
-        if (!empty($request->file('picture'))) {
-            Storage::delete($fileName);
-            $fileName = Storage::put("$date/products/",$request->file('picture'));
+        $picture = $product->picture;
+        $gallery = $product->media();
+
+        $this->deleteStorage($picture);
+
+        foreach ($gallery->get() as $galleryItem) {
+            $this->deleteStorage($galleryItem->name);
         }
-        $filesName = json_decode($product->more_pictures);
-        if (!empty($request->file('more_pictures'))){
-            $filesName = [];
-            $files = json_decode($product->more_pictures);
-            foreach ($files as $file){
-                Storage::delete($files);
-            }
-            foreach ($request->file('more_pictures') as $item){
-                $filesName[] = Storage::put("$date/products",$item);
-            }
+
+        $gallery->delete();
+
+        foreach ($request->file('more_pictures') as $item) {
+            $gallery->create(['name' => $this->putStorage("/products", $item)]);
         }
-        # BIND PARAMETERS
+
         $product->update([
             'name' => $request->input('name'),
             'slug' => $request->input('slug'),
@@ -92,103 +98,116 @@ class productController extends Controller
             'view_count' => $request->input('view_count'),
             'code' => $request->input('code'),
             'sell_count' => $request->input('sell_count'),
-            "picture" => $fileName,
-            "more_pictures" => json_encode($filesName)
+            "picture" => $this->putStorage('/products',$request->file('picture')),
         ]);
+        $product->save();
 
-        # PRODUCT RESOURCE
-        $ProductResource = new ProductResource($product);
-
-        # RESPONSE
-        return $this->sendSuccess($ProductResource, __('general.product.update'));
+        return $this->sendSuccess($product, 'Product Updated Successfully');
     }
 
     # DELETE
     public function destroy(ProductRequest $request)
     {
-        # FIND AND DELETE
+        /*
+         * get product id
+         * validate data
+         * ============================================
+         * find product
+         * delete main picture
+         * delete gallery
+         * delete product
+         * response
+        */
+
         $product = product::find($request->input('product_id'));
 
         Storage::delete($product->picture);
 
-        $pictures = json_decode($product->more_pictures);
-        foreach ($pictures as $picture){
+        foreach ($product->more_pictures as $picture) {
             Storage::delete($picture);
         }
 
-        # SEND RESPONSE
         return $this->sendSuccess('', __('general.product.delete'));
     }
 
     # SELECT ONE
     public function show(ProductRequest $request)
     {
-        # FIND
+        /*
+         * get product id
+         * validate data
+         * ============================================
+         * find product
+         * send to resource
+         * response
+        */
+
         $product = product::find($request->input('product_id'));
 
-        # PRODUCT RESOURCE
-        $productResource = new ProductResource($product);
-
-        # SEND RESPONSE
-        return $this->sendSuccess($productResource, __('general.product.select'));
+        return $this->sendSuccess(new ProductResource($product), __('general.product.select'));
     }
 
     # SELECT ALL
     public function showAll()
     {
-        # GET ALL PRODUCTS
+        /*
+         * select all product
+         * send to collection
+         * response
+        */
+
         $product = product::all();
 
-        # PRODUCT COLLECTION
-        $productCollection = new ProductCollection($product);
-
-        # SEND RESPONSE
-        return $this->sendSuccess($productCollection, __('general.product.select-all'));
+        return $this->sendSuccess(new ProductCollection($product), __('general.product.select-all'));
     }
 
     # CHANGE STATUS
     public function status(StatusProductRequest $request)
     {
-        # FIND
+        /*
+         * get product id
+         * validate data
+         * ============================================
+         * find product
+         * change status
+         * send to resource
+         * response
+        */
+
         $product = product::find($request->input('id'));
 
-        # CHANGE STATUS
         $product->status = $product->status == product::ACTIVE ? product::IN_ACTIVE : product::ACTIVE;
         $product->save();
 
-        # RESOURCE CATEGORY
-        $productResource = new ProductResource($product);
-
-        # SEND RESPONSE
-        return $this->sendSuccess($productResource, __('general.product.status'));
+        return $this->sendSuccess(new ProductResource($product), __('general.product.status'));
     }
 
     public function amazingProduct()
     {
-        $product = Product::where('status','=',1)->orderBy('price','Asc')->take(15)->get();
+        $product = Product::where('status', '=', 1)->orderBy('price', 'Asc')->take(15)->get();
 
-        return $this->sendSuccess($product,'Amazing products');
+        return $this->sendSuccess($product, 'Amazing products');
     }
 
     public function mostSales()
     {
-        $product = Product::where('status','=',1)->orderBy('sell_count','Desc')->take(15)->get();
+        $product = Product::where('status', '=', 1)->orderBy('sell_count', 'Desc')->take(15)->get();
 
-        return $this->sendSuccess($product,'most Sales Product');
+        return $this->sendSuccess($product, 'most Sales Product');
     }
 
     public function newProduct()
     {
-        $product = Product::where('status','=',1)->orderBy('created_at','Asc')->take(15)->get();
+        $product = Product::where('status', '=', 1)->orderBy('created_at', 'Asc')->take(15)->get();
 
-        return $this->sendSuccess($product,'most new products');
+        return $this->sendSuccess($product, 'most new products');
     }
 
     public function mostFavorite()
     {
-        $product = Product::withCount('likes')->where('status','=',1)->orderBy('likes_count','Desc')->take(15)->get();
+        $product = Product::withCount('likes')->where('status', '=', 1)->orderBy('likes_count', 'Desc')->take(15)->get();
 
-        return $this->sendSuccess($product,'most new products');
+        return $this->sendSuccess($product, 'most new products');
     }
 
     public function likeProduct(ProductRequest $request)

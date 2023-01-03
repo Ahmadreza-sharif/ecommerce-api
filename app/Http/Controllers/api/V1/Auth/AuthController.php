@@ -60,4 +60,13 @@ class AuthController extends Controller
         # SEND RESPONSE
         return $this->sendSuccess('', __('general.auth.customer.logout'));
     }
+
+    public function verify()
+    {
+        $user = \App\Models\User::find(1);
+        $code = rand(1000,9999);
+        $user->notify(new \App\Notifications\OtpNotification($code));
+
+        return $this->sendSuccess([],'verification code send successfully');
+    }
 }

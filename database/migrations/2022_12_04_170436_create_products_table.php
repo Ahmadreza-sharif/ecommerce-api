@@ -25,7 +25,6 @@ return new class extends Migration
             $table->integer('view_count');
             $table->integer('code');
             $table->integer('sell_count');
-            $table->string('more_pictures');
             $table->string('picture');
             $table->bigInteger('category_id')->unsigned();
             $table->foreign('category_id')->on('categories')->references('id')
