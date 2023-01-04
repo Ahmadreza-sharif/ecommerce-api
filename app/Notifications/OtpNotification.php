@@ -2,14 +2,14 @@
 
 namespace App\Notifications;
 
-use App\Mail\otpEmail;
+use App\Mail\OtpUser;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class optlNotification extends Notification
+class OtpNotification extends Notification
 {
     use Queueable;
     protected $code;
@@ -26,12 +26,11 @@ class optlNotification extends Notification
 
     /**
      * @param User $notifiable
-     * @return otpEmail
+     * @return OtpUser
      */
     public function toMail(User $notifiable)
     {
-        new MailMessage;
-        return (new otpEmail($this->code))
+        return (new OtpUser($this->code))
             ->subject('verify code')
             ->to($notifiable->email);
     }

@@ -160,10 +160,10 @@ Route::prefix('v1/')->group(function () {
 
 
     Route::get('/logout', [\App\Http\Controllers\api\V1\Auth\AuthController::class, 'logout']);
-    Route::get('/verify-email', [\App\Http\Controllers\api\V1\Auth\AuthController::class, 'verifyEmail']);
+    Route::post('/confirmCode',[\App\Http\Controllers\api\V1\Auth\AuthController::class,'confirm']);
     Route::post('/login', [\App\Http\Controllers\api\V1\Auth\AuthController::class, 'login'])->name('login');
     Route::post('/register', [\App\Http\Controllers\api\V1\Auth\AuthController::class, 'register']);
-    Route::get('/verify/code',[\App\Http\Controllers\api\V1\Auth\AuthController::class,'verify']);
+    Route::get('/verifyCode',[\App\Http\Controllers\api\V1\Auth\AuthController::class,'verify']);
 });
 
 

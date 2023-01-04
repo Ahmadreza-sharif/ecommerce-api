@@ -6,17 +6,20 @@ use App\Http\Controllers\api\traits\ApiResponder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\auth\LoginRequest;
 use App\Http\Requests\Api\V1\auth\RegisterRequest;
+use App\Http\Requests\Api\V1\Otp\UserEmailOtp;
+use App\Http\Requests\Api\V1\Otp\UserEmailOtpRequest;
+use App\Mail\OtpUser;
 use App\Models\Role;
 use App\Models\User;
+use Dflydev\DotAccessData\Data;
 use Illuminate\Auth\Access\Gate;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
-
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
         # GET DATA AND VALIDATION
         # CHECK DATA
@@ -32,12 +35,7 @@ class AuthController extends Controller
         return $this->sendSuccess(['token' => $token], __('general.auth.customer.login.success'));
     }
 
-    public function verifyEmail()
-    {
-
-    }
-
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
     {
         # GET DATA AND VALIDATION
         # CREATE TOKEN
@@ -52,7 +50,7 @@ class AuthController extends Controller
         return $this->sendSuccess(['token' => $token], __('general.auth.customer.register.success'));
     }
 
-    public function logout()
+    public function logout(): \Illuminate\Http\JsonResponse
     {
         # DELETE TOKEN
         auth('sanctum')->user()->tokens()->delete();
@@ -61,12 +59,51 @@ class AuthController extends Controller
         return $this->sendSuccess('', __('general.auth.customer.logout'));
     }
 
-    public function verify()
+    public function verify(): \Illuminate\Http\JsonResponse
     {
         $user = \App\Models\User::find(1);
-        $code = rand(1000,9999);
+        if (!empty($user->email_verified_at)) {
+            return $this->sendSuccess([], 'your email has been verified');
+        }
+        $code = rand(10000, 99999);
+        if (!empty($user->otp)) {
+            $user->otp()->update([
+                'try_count' => $user->otp->try_count + 1,
+                'updated_at' => Carbon::now()->addMinute(5)->toDateTimeString()
+            ]);
+            $code = $user->otp->code;
+        } else {
+            \App\Models\OtpUser::create([
+                'user_id' => $user->id,
+                'code' => $code,
+                'try_count' => '1'
+            ]);
+        }
         $user->notify(new \App\Notifications\OtpNotification($code));
 
-        return $this->sendSuccess([],'verification code send successfully');
+        return $this->sendSuccess([], 'verification code send successfully');
+    }
+
+    public function confirm(UserEmailOtpRequest $request)
+    {
+        $now = Carbon::now()->toDateTimeString();
+        $code = \App\Models\OtpUser::where('code', '=', $request->input('code'))
+            ->where('try_count', '<', 6)
+            ->where('updated_at', ">", $now)
+            ->first();
+
+        if (empty($code->user->email_verified_at)) {
+            if (!empty($code)) {
+                $code->user()->update([
+                    'email_verified_at' => $now
+                ]);
+
+                return $this->sendSuccess([], 'verifying successfully done.');
+            } else {
+                return $this->sendError([], 'Invalid Code');
+            }
+        } else {
+            return $this->sendError([],'your account is verified');
+        }
     }
 }

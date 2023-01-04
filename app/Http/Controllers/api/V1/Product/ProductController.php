@@ -11,6 +11,7 @@ use App\Http\Requests\Api\V1\Admin\product\UpdateProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,7 +19,7 @@ class productController extends Controller
 {
 
     # CREATE
-    public function store(CreateProductRequest $request)
+    public function store(CreateProductRequest $request): JsonResponse
     {
         /*
          * get data from user
@@ -53,7 +54,7 @@ class productController extends Controller
     }
 
     # UPDATE
-    public function update(UpdateProductRequest $request)
+    public function update(UpdateProductRequest $request): JsonResponse
     {
         /*
          * get data from user
@@ -106,7 +107,7 @@ class productController extends Controller
     }
 
     # DELETE
-    public function destroy(ProductRequest $request)
+    public function destroy(ProductRequest $request): JsonResponse
     {
         /*
          * get product id
@@ -131,7 +132,7 @@ class productController extends Controller
     }
 
     # SELECT ONE
-    public function show(ProductRequest $request)
+    public function show(ProductRequest $request): JsonResponse
     {
         /*
          * get product id
@@ -148,7 +149,7 @@ class productController extends Controller
     }
 
     # SELECT ALL
-    public function showAll()
+    public function showAll(): \Illuminate\Http\JsonResponse
     {
         /*
          * select all product
@@ -162,7 +163,7 @@ class productController extends Controller
     }
 
     # CHANGE STATUS
-    public function status(StatusProductRequest $request)
+    public function status(StatusProductRequest $request): JsonResponse
     {
         /*
          * get product id
@@ -182,35 +183,35 @@ class productController extends Controller
         return $this->sendSuccess(new ProductResource($product), __('general.product.status'));
     }
 
-    public function amazingProduct()
+    public function amazingProduct(): JsonResponse
     {
         $product = Product::where('status', '=', 1)->orderBy('price', 'Asc')->take(15)->get();
 
         return $this->sendSuccess($product, 'Amazing products');
     }
 
-    public function mostSales()
+    public function mostSales(): JsonResponse
     {
         $product = Product::where('status', '=', 1)->orderBy('sell_count', 'Desc')->take(15)->get();
 
         return $this->sendSuccess($product, 'most Sales Product');
     }
 
-    public function newProduct()
+    public function newProduct(): JsonResponse
     {
         $product = Product::where('status', '=', 1)->orderBy('created_at', 'Asc')->take(15)->get();
 
         return $this->sendSuccess($product, 'most new products');
     }
 
-    public function mostFavorite()
+    public function mostFavorite(): JsonResponse
     {
         $product = Product::withCount('likes')->where('status', '=', 1)->orderBy('likes_count', 'Desc')->take(15)->get();
 
         return $this->sendSuccess($product, 'most new products');
     }
 
-    public function likeProduct(ProductRequest $request)
+    public function likeProduct(ProductRequest $request): JsonResponse
     {
         $product = Product::find($request->input('product_id'));
 
